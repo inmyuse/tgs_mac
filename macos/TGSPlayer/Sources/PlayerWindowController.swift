@@ -13,6 +13,7 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
     private var folderFiles: [URL] = []
 
     init() {
+        AppLog.write("PlayerWindowController init")
         let configuration = WKWebViewConfiguration()
         configuration.userContentController.add(WeakScriptMessageHandler(), name: "tgsPlayer")
         webView = WKWebView(frame: .zero, configuration: configuration)
@@ -50,6 +51,7 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
         webView.allowsBackForwardNavigationGestures = false
 
         loadInterface()
+        AppLog.write("PlayerWindowController init finished")
     }
 
     required init?(coder: NSCoder) {
@@ -58,21 +60,22 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
 
     func present() {
         guard let window else { return }
-        print("TGSPlayer: present window frame=\(window.frame)")
+        AppLog.write("present before visible=\(window.isVisible) frame=\(window.frame)")
         window.center()
         window.setFrame(window.frame, display: true)
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
+        AppLog.write("present after visible=\(window.isVisible) key=\(window.isKeyWindow) main=\(window.isMainWindow)")
     }
 
     private func loadInterface() {
         if let html = findResource(named: "index", extension: "html") {
-            print("TGSPlayer: loading UI from \(html.path)")
+            AppLog.write("loading UI from \(html.path)")
             webView.loadFileURL(html, allowingReadAccessTo: html.deletingLastPathComponent())
             return
         }
 
-        print("TGSPlayer: index.html not found, showing fallback")
+        AppLog.write("index.html not found, showing fallback")
         let fallback = """
         <!doctype html>
         <html>
@@ -111,15 +114,15 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("TGSPlayer: UI navigation finished")
+        AppLog.write("UI navigation finished")
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("TGSPlayer: UI navigation failed \(error.localizedDescription)")
+        AppLog.write("UI navigation failed \(error.localizedDescription)")
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        print("TGSPlayer: UI provisional navigation failed \(error.localizedDescription)")
+        AppLog.write("UI provisional navigation failed \(error.localizedDescription)")
     }
 
     func openTgs(url: URL) {
