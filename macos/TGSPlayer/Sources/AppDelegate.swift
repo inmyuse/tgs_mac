@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppLog.write("applicationDidFinishLaunching")
         NSApp.setActivationPolicy(.regular)
+        warnIfRunningFromMountedImage()
         let controller = PlayerWindowController()
         windowController = controller
         controller.showWindow(nil)
@@ -56,6 +57,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             windowController?.present()
         }
         return true
+    }
+
+    private func warnIfRunningFromMountedImage() {
+        let appPath = Bundle.main.bundleURL.path
+        AppLog.write("bundlePath=\(appPath)")
+        guard appPath.hasPrefix("/Volumes/") else { return }
+
+        let alert = NSAlert()
+        alert.messageText = "TGSPlayer запущен из DMG"
+        alert.informativeText = "Перетащите TGSPlayer.app в Applications и запускайте приложение оттуда. Если запускать прямо из DMG, macOS может размонтировать том и приложение упадет."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "ОК")
+        alert.runModal()
     }
 }
 

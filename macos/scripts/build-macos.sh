@@ -66,9 +66,15 @@ cp -R "$APP" "$DIST/TGSPlayer.app"
 
 codesign --force --deep --sign - "$DIST/TGSPlayer.app"
 
+DMG_ROOT="$BUILD/dmg-root"
+rm -rf "$DMG_ROOT"
+mkdir -p "$DMG_ROOT"
+cp -R "$DIST/TGSPlayer.app" "$DMG_ROOT/TGSPlayer.app"
+ln -s /Applications "$DMG_ROOT/Applications"
+
 hdiutil create \
   -volname "TGSPlayer" \
-  -srcfolder "$DIST/TGSPlayer.app" \
+  -srcfolder "$DMG_ROOT" \
   -ov \
   -format UDZO \
   "$DIST/TGSPlayer.dmg"
