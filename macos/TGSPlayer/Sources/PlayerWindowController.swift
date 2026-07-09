@@ -7,7 +7,7 @@ final class PlayerWindow: NSWindow {
     override var canBecomeMain: Bool { true }
 }
 
-final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, NSWindowDelegate {
+final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, NSWindowDelegate, WKNavigationDelegate {
     private let webView: WKWebView
     private var currentURL: URL?
     private var folderFiles: [URL] = []
@@ -19,7 +19,7 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
 
         let window = PlayerWindow(
             contentRect: NSRect(x: 0, y: 0, width: 760, height: 360),
-            styleMask: [.borderless, .resizable, .miniaturizable, .closable],
+            styleMask: [.titled, .fullSizeContentView, .resizable, .miniaturizable, .closable],
             backing: .buffered,
             defer: false
         )
@@ -30,13 +30,19 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
         window.hasShadow = true
         window.title = "TGSPlayer"
         window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
         window.isReleasedWhenClosed = false
+        window.standardWindowButton(.closeButton)?.isHidden = true
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        window.standardWindowButton(.zoomButton)?.isHidden = true
 
         super.init(window: window)
         WeakScriptMessageHandler.target = self
         window.delegate = self
         window.contentView = webView
+
+        webView.navigationDelegate = self
         webView.wantsLayer = true
         webView.layer?.cornerRadius = 17
         webView.layer?.masksToBounds = true
@@ -52,17 +58,21 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
 
     func present() {
         guard let window else { return }
+        print("TGSPlayer: present window frame=\(window.frame)")
         window.center()
+        window.setFrame(window.frame, display: true)
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
     }
 
     private func loadInterface() {
         if let html = findResource(named: "index", extension: "html") {
+            print("TGSPlayer: loading UI from \(html.path)")
             webView.loadFileURL(html, allowingReadAccessTo: html.deletingLastPathComponent())
             return
         }
 
+        print("TGSPlayer: index.html not found, showing fallback")
         let fallback = """
         <!doctype html>
         <html>
@@ -79,7 +89,7 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
               }
             </style>
           </head>
-          <body>Не найден index.html внутри TGSPlayer.app</body>
+          <body>index.html was not found inside TGSPlayer.app</body>
         </html>
         """
         webView.loadHTMLString(fallback, baseURL: nil)
@@ -93,12 +103,23 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
             return url
         }
 
-        let bundleResource = Bundle.main.resourceURL
         let candidates = [
-            bundleResource?.appendingPathComponent("Resources/\(name).\(ext)"),
-            bundleResource?.appendingPathComponent("\(name).\(ext)")
+            Bundle.main.resourceURL?.appendingPathComponent("Resources/\(name).\(ext)"),
+            Bundle.main.resourceURL?.appendingPathComponent("\(name).\(ext)")
         ]
         return candidates.compactMap { $0 }.first { FileManager.default.fileExists(atPath: $0.path) }
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        print("TGSPlayer: UI navigation finished")
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("TGSPlayer: UI navigation failed \(error.localizedDescription)")
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        print("TGSPlayer: UI provisional navigation failed \(error.localizedDescription)")
     }
 
     func openTgs(url: URL) {
@@ -125,7 +146,9 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
         else { return }
 
         if type == "drag" {
-            window?.performDrag(with: NSApp.currentEvent!)
+            if let event = NSApp.currentEvent {
+                window?.performDrag(with: event)
+            }
             return
         }
 
@@ -163,11 +186,12 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
     }
 
     private func pickFile() {
+        guard let window else { return }
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.init(filenameExtension: "tgs")!]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        panel.beginSheetModal(for: window!) { [weak self] response in
+        panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             self?.openTgs(url: url)
         }

@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var pendingFile: URL?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        print("TGSPlayer: applicationDidFinishLaunching")
         NSApp.setActivationPolicy(.regular)
         let controller = PlayerWindowController()
         windowController = controller
