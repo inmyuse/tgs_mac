@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TGS Player</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell no-file" id="dropZone">
+      <header class="titlebar">
+        <div class="drag-region" id="dragRegion"></div>
+        <div class="window-controls">
+          <button class="window-button mdl" id="minimizeButton" type="button" aria-label="&#1057;&#1074;&#1077;&#1088;&#1085;&#1091;&#1090;&#1100;">&#xE921;</button>
+          <button class="window-button mdl" id="maximizeButton" type="button" aria-label="&#1055;&#1086;&#1083;&#1085;&#1099;&#1081; &#1101;&#1082;&#1088;&#1072;&#1085;">&#xE740;</button>
+          <button class="window-button mdl close" id="closeButton" type="button" aria-label="&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;">&#xE8BB;</button>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-label="&#1055;&#1086;&#1083;&#1077; &#1076;&#1083;&#1103; &#1087;&#1077;&#1088;&#1077;&#1090;&#1072;&#1089;&#1082;&#1080;&#1074;&#1072;&#1085;&#1080;&#1103; TGS">
+        <div id="animation"></div>
+        <div class="empty-state" id="emptyState" aria-hidden="true">
+          <p>&#1055;&#1077;&#1088;&#1077;&#1090;&#1072;&#1097;&#1080;&#1090;&#1077; &#1089;&#1102;&#1076;&#1072; &#1074;&#1072;&#1096; TGS &#1092;&#1072;&#1081;&#1083;</p>
+        </div>
+      </section>
+    </main>
+    <script src="./lottie.min.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

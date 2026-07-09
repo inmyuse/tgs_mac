@@ -1,0 +1,45 @@
+name: TGSPlayer
+options:
+  bundleIdPrefix: local.tgsplayer
+  deploymentTarget:
+    macOS: "12.0"
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.9"
+targets:
+  TGSPlayer:
+    type: application
+    platform: macOS
+    deploymentTarget: "12.0"
+    sources:
+      - path: TGSPlayer/Sources
+      - path: TGSPlayer/Resources
+        type: folder
+    info:
+      path: TGSPlayer/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.tgsplayer.viewer
+        PRODUCT_NAME: TGSPlayer
+        INFOPLIST_FILE: TGSPlayer/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies:
+      - target: TGSQuickLook
+        embed: true
+  TGSQuickLook:
+    type: app-extension
+    platform: macOS
+    deploymentTarget: "12.0"
+    sources:
+      - path: TGSQuickLook/Sources
+      - path: TGSPlayer/Resources
+        type: folder
+    info:
+      path: TGSQuickLook/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.tgsplayer.viewer.quicklook
+        PRODUCT_NAME: TGSQuickLook
+        INFOPLIST_FILE: TGSQuickLook/Info.plist
+
