@@ -2,6 +2,11 @@ import AppKit
 import UniformTypeIdentifiers
 import WebKit
 
+final class PlayerWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, NSWindowDelegate {
     private let webView: WKWebView
     private var currentURL: URL?
@@ -12,7 +17,7 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
         configuration.userContentController.add(WeakScriptMessageHandler(), name: "tgsPlayer")
         webView = WKWebView(frame: .zero, configuration: configuration)
 
-        let window = NSWindow(
+        let window = PlayerWindow(
             contentRect: NSRect(x: 0, y: 0, width: 760, height: 360),
             styleMask: [.borderless, .resizable, .miniaturizable, .closable],
             backing: .buffered,
@@ -21,11 +26,12 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
         window.center()
         window.minSize = NSSize(width: 560, height: 280)
         window.isOpaque = false
-        window.backgroundColor = .clear
+        window.backgroundColor = NSColor(calibratedRed: 1.0, green: 0.70, blue: 0.70, alpha: 1.0)
         window.hasShadow = true
         window.title = "TGSPlayer"
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = false
+        window.isReleasedWhenClosed = false
 
         super.init(window: window)
         WeakScriptMessageHandler.target = self
@@ -37,13 +43,62 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
         webView.setValue(false, forKey: "drawsBackground")
         webView.allowsBackForwardNavigationGestures = false
 
-        if let html = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "Resources") {
-            webView.loadFileURL(html, allowingReadAccessTo: html.deletingLastPathComponent())
-        }
+        loadInterface()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    func present() {
+        guard let window else { return }
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
+    }
+
+    private func loadInterface() {
+        if let html = findResource(named: "index", extension: "html") {
+            webView.loadFileURL(html, allowingReadAccessTo: html.deletingLastPathComponent())
+            return
+        }
+
+        let fallback = """
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              html, body { width: 100%; height: 100%; margin: 0; }
+              body {
+                display: grid;
+                place-items: center;
+                font: 16px -apple-system, BlinkMacSystemFont, sans-serif;
+                color: #342223;
+                background: linear-gradient(180deg, #FEB3B3, #fff);
+              }
+            </style>
+          </head>
+          <body>Не найден index.html внутри TGSPlayer.app</body>
+        </html>
+        """
+        webView.loadHTMLString(fallback, baseURL: nil)
+    }
+
+    private func findResource(named name: String, extension ext: String) -> URL? {
+        if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Resources") {
+            return url
+        }
+        if let url = Bundle.main.url(forResource: name, withExtension: ext) {
+            return url
+        }
+
+        let bundleResource = Bundle.main.resourceURL
+        let candidates = [
+            bundleResource?.appendingPathComponent("Resources/\(name).\(ext)"),
+            bundleResource?.appendingPathComponent("\(name).\(ext)")
+        ]
+        return candidates.compactMap { $0 }.first { FileManager.default.fileExists(atPath: $0.path) }
     }
 
     func openTgs(url: URL) {
