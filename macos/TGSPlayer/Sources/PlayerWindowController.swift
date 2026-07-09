@@ -20,23 +20,20 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
 
         let window = PlayerWindow(
             contentRect: NSRect(x: 0, y: 0, width: 760, height: 360),
-            styleMask: [.titled, .fullSizeContentView, .resizable, .miniaturizable, .closable],
+            styleMask: [.titled, .resizable, .miniaturizable, .closable],
             backing: .buffered,
             defer: false
         )
         window.center()
         window.minSize = NSSize(width: 560, height: 280)
-        window.isOpaque = false
+        window.isOpaque = true
         window.backgroundColor = NSColor(calibratedRed: 1.0, green: 0.70, blue: 0.70, alpha: 1.0)
         window.hasShadow = true
         window.title = "TGSPlayer"
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .visible
+        window.titlebarAppearsTransparent = false
         window.isMovableByWindowBackground = false
         window.isReleasedWhenClosed = false
-        window.standardWindowButton(.closeButton)?.isHidden = true
-        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-        window.standardWindowButton(.zoomButton)?.isHidden = true
 
         super.init(window: window)
         WeakScriptMessageHandler.target = self
@@ -45,9 +42,9 @@ final class PlayerWindowController: NSWindowController, WKScriptMessageHandler, 
 
         webView.navigationDelegate = self
         webView.wantsLayer = true
-        webView.layer?.cornerRadius = 17
+        webView.layer?.cornerRadius = 0
         webView.layer?.masksToBounds = true
-        webView.setValue(false, forKey: "drawsBackground")
+        webView.setValue(true, forKey: "drawsBackground")
         webView.allowsBackForwardNavigationGestures = false
 
         loadInterface()

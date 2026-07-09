@@ -1,7 +1,6 @@
 import AppKit
 import WebKit
 
-@main
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var windowController: PlayerWindowController?
     private var pendingFile: URL?
@@ -15,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppLog.write("applicationDidFinishLaunching")
         NSApp.setActivationPolicy(.regular)
         warnIfRunningFromMountedImage()
+
         let controller = PlayerWindowController()
         windowController = controller
         controller.showWindow(nil)
@@ -65,10 +65,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard appPath.hasPrefix("/Volumes/") else { return }
 
         let alert = NSAlert()
-        alert.messageText = "TGSPlayer запущен из DMG"
-        alert.informativeText = "Перетащите TGSPlayer.app в Applications и запускайте приложение оттуда. Если запускать прямо из DMG, macOS может размонтировать том и приложение упадет."
+        alert.messageText = "TGSPlayer is running from DMG"
+        alert.informativeText = "Drag TGSPlayer.app into Applications and run it from there. Running directly from DMG can crash if macOS unmounts the image."
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "ОК")
+        alert.addButton(withTitle: "OK")
         alert.runModal()
     }
 }
